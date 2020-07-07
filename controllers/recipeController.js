@@ -28,13 +28,15 @@ exports.recipesListGet = function (req, res, next) {
 };
 // GET details of one recipe
 exports.recipeDetailGet = function (req, res, next) {
-  Recipe.findById(req.params.id, (err, recipe) => {
-    if (err) return next(err);
-    res.render("recipeDetail", {
-      title: "Recipe",
-      recipe,
+  Recipe.findById(req.params.id)
+    .orFail(new Error("Recipe not found"))
+    .exec((err, recipe) => {
+      if (err) return next(err);
+      res.render("recipeDetail", {
+        title: "Recipe",
+        recipe,
+      });
     });
-  });
 };
 
 // GET form to update recipe

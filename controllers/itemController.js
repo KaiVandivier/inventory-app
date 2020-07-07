@@ -15,6 +15,8 @@ exports.itemCreatePost = function (req, res, next) {
   res.send("NOT IMPLEMENTED: itemCreatePost");
 };
 
+
+
 // GET a list of all items
 exports.itemsListGet = function (req, res, next) {
   Item.find()
@@ -31,12 +33,15 @@ exports.itemsListGet = function (req, res, next) {
 // GET details of one item
 exports.itemDetailGet = function (req, res, next) {
   Item.findById(req.params.id)
+    .orFail(new Error("Item not found"))
     .populate("category")
     .exec((err, item) => {
       if (err) return next(err);
       res.render("itemDetail", { title: "Item", item });
     });
 };
+
+
 
 // GET form to update item
 exports.itemUpdateGet = function (req, res, next) {
@@ -46,6 +51,8 @@ exports.itemUpdateGet = function (req, res, next) {
 exports.itemUpdatePost = function (req, res, next) {
   res.send("NOT IMPLEMENTED: itemUpdatePost");
 };
+
+
 
 // GET form to delete item
 exports.itemDeleteGet = function (req, res, next) {
