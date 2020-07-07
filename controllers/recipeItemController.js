@@ -1,5 +1,6 @@
 const async = require("async");
 const { body, validationResult } = require("express-validator");
+const debug = require("debug")("inventory-app:recipeItemController");
 
 const Item = require("../models/item");
 const Category = require("../models/category");
@@ -17,11 +18,39 @@ exports.recipeItemCreatePost = function (req, res, next) {
 
 // GET a list of all recipeItems
 exports.recipeItemsListGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: recipeItemsListGet");
+  RecipeItem.find()
+    .populate("item")
+    .exec((err, recipeItems) => {
+      if (err) return next(err);
+      res.render("recipeItemList", {
+        title: "All Recipe Items",
+        recipeItems,
+      });
+    });
 };
 // GET details of one recipeItem
 exports.recipeItemDetailGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: recipeItemDetailGet");
+  async.parallel(
+    {
+      recipeItem: (cb) =>
+        RecipeItem.findById(req.params.id)
+          .orFail(new Error("Recipe Item not found"))
+          .populate("item")
+          .exec(cb),
+      recipe: (cb) =>
+        Recipe.findOne({ recipeItems: req.params.id })
+          .orFail(new Error("Recipe not found"))
+          .exec(cb),
+    },
+    (err, { recipeItem, recipe }) => {
+      if (err) return next(err);
+      res.render("recipeItemDetail", {
+        title: "Recipe Item",
+        recipeItem,
+        recipe,
+      });
+    }
+  );
 };
 
 // GET form to update recipeItem

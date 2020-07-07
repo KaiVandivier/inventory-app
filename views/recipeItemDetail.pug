@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 #{title}: #{recipeItem.item.name}
+
+  p #[strong Recipe:] #[a(href=recipe.url) #{recipe.name}]
+  p #[strong Item:] #[a(href=recipeItem.item.url) #{recipeItem.item.name}]
+  p #[strong Quantity:] #{recipeItem.quantity}
+
+  hr
+  p: a(href=`/recipeItem/${recipeItem._id}/update`) Update Recipe Item
+  p: a(href=`/recipeItem/${recipeItem._id}/delete`) Delete Recipe Item
