@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1= title
+
+  dl
+    each recipe in recipes
+      dt: a(href=recipe.url) #{recipe.name}
+      dd #{recipe.description}
+
+    else
+      p There are no recipes yet.
+
+  hr
+  p: a(href="/recipe/create") Create a Recipe

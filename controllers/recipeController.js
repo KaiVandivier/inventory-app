@@ -17,11 +17,24 @@ exports.recipeCreatePost = function (req, res, next) {
 
 // GET a list of all recipes
 exports.recipesListGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: recipesListGet");
+  // Recipe `find` and `findOne` automagically populate `recipeItems` and `item`
+  Recipe.find((err, recipes) => {
+    if (err) return next(err);
+    res.render("recipeList", {
+      title: "All Recipes",
+      recipes,
+    });
+  });
 };
 // GET details of one recipe
 exports.recipeDetailGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: recipeDetailGet");
+  Recipe.findById(req.params.id, (err, recipe) => {
+    if (err) return next(err);
+    res.render("recipeDetail", {
+      title: "Recipe",
+      recipe,
+    });
+  });
 };
 
 // GET form to update recipe
