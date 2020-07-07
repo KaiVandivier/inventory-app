@@ -14,5 +14,12 @@ itemSchema.virtual("url").get(function () {
   return `/item/${this._id}`;
 });
 
+// Virtual to format price
+itemSchema.virtual("priceFormatted").get(function () {
+  return `$${Math.floor(
+    this.price / 100
+  )}.${String(this.price % 100).padStart(2, "0")}`;
+});
+
 // Export model for use
 module.exports = model("Item", itemSchema);
