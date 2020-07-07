@@ -34,7 +34,7 @@ router.post("/item/:id/delete", itemController.itemDeletePost);
 router.get("/category/create", categoryController.categoryCreateGet);
 router.post("/category/create", categoryController.categoryCreatePost);
 
-router.get("/categorys", categoryController.categorysListGet);
+router.get("/categories", categoryController.categoriesListGet);
 router.get("/category/:id", categoryController.categoryDetailGet);
 
 router.get("/category/:id/update", categoryController.categoryUpdateGet);
