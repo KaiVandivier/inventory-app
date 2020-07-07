@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1= title
+
+  dl
+    each category in categories
+      dt: a(href=category.url) #{category.name}
+      dd #{category.description}
+    
+    else
+      p No categories yet.

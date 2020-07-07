@@ -1,0 +1,19 @@
+extends layout
+
+block content
+  h1 #{title}: #{category.name}
+  p #[strong Description:] #{category.description}
+
+  .inset
+    h4 Items in #{category.name}
+
+    dl
+      each item in categoryItems
+        dt: a(href=item.url) #{item.name}
+        dd #{item.priceFormatted}
+        dd #{item.description}
+
+      else
+        p There are no items in this category yet.
+
+
