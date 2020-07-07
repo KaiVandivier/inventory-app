@@ -16,7 +16,8 @@ const { devDbUrl } = require("./config");
 const mongoDB = process.env.MONGODB_URI || devDbUrl;
 mongoose.connect(mongoDB, {
   useNewUrlParser: true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  useUnifiedTopology: true,
 });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
