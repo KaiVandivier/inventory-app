@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  h1 #{title}: #{item.name}
+  p #[strong Description:] #{item.description}
+  p #[strong Price:] #{item.priceFormatted}
+  p #[strong In Stock:] #{item.stock}
+  p #[strong Category:] 
+    each category, index in item.category
+      a(href=category.url) #{category.name}
+      if index < item.category.length - 1
+        |, 
+    else
+      | None
+
+  hr
+  p: a(href=`/item/${item._id}/update`) Update item
+  p: a(href=`/item/${item._id}/delete`) Delete item

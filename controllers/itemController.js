@@ -17,11 +17,25 @@ exports.itemCreatePost = function (req, res, next) {
 
 // GET a list of all items
 exports.itemsListGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemsListGet");
+  Item.find()
+    .populate("category")
+    .exec((err, items) => {
+      if (err) return next(err);
+      res.render("itemList", {
+        title: "All Items",
+        items,
+      });
+    });
 };
+
 // GET details of one item
 exports.itemDetailGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemDetailGet");
+  Item.findById(req.params.id)
+    .populate("category")
+    .exec((err, item) => {
+      if (err) return next(err);
+      res.render("itemDetail", { title: "Item", item });
+    });
 };
 
 // GET form to update item

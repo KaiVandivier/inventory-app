@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= title
+
+  dl
+    each item in items
+      dt: a(href=item.url) #{item.name}
+      dd #{item.priceFormatted}
+      dd #{item.description}
+    
+    else
+      p No items yet.
+
+  hr
+  p: a(href=`/item/create`) Create Item
