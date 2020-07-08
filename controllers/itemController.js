@@ -1,5 +1,6 @@
 const async = require("async");
 const { body, validationResult } = require("express-validator");
+const debug = require("debug")("inventory-app:itemController");
 
 const Item = require("../models/item");
 const Category = require("../models/category");
@@ -7,20 +8,63 @@ const RecipeItem = require("../models/recipeItem");
 const Recipe = require("../models/recipe");
 
 // Get form for item creation
-exports.itemCreateGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemCreateGet");
+exports.itemCreateGet = async function (req, res, next) {
+  // Get categories for form
+  Category.find((err, categories) => {
+    if (err) return next(err);
+    res.render("itemForm", {
+      title: "Create Item",
+      categories,
+    });
+  });
 };
 // POST endpoint to create new item
-exports.itemCreatePost = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemCreatePost");
-};
+exports.itemCreatePost = [
+  body("name", "Name must not be empty").trim().notEmpty().escape(),
+  body("description", "Description must not be empty")
+    .trim()
+    .notEmpty()
+    .escape(),
+  body("price", "Price must be a whole number (cents)").isInt({ min: 0 }),
+  body("stock", "Stock must be a whole number").isInt({ min: 0 }),
+  // Convert category to an array
+  body("category").toArray(),
 
+  function (req, res, next) {
+    debug(req.body);
 
+    const errors = validationResult(req);
+
+    const item = new Item({ ...req.body });
+
+    if (!errors.isEmpty()) {
+      // There are errors - rerender form with errors
+      Category.find((err, categories) => {
+        if (err) return next(err);
+
+        res.render("itemForm", {
+          title: "Create Item",
+          item,
+          categories,
+          errors: errors.array(),
+        });
+      });
+      return;
+    }
+
+    // All good - save item and redirect to detail page
+    item.save((err) => {
+      if (err) return next(err);
+      res.redirect(item.url);
+    });
+  },
+];
 
 // GET a list of all items
 exports.itemsListGet = function (req, res, next) {
   Item.find()
     .populate("category")
+    .sort([["name", "ascending"]])
     .exec((err, items) => {
       if (err) return next(err);
       res.render("itemList", {
@@ -41,8 +85,6 @@ exports.itemDetailGet = function (req, res, next) {
     });
 };
 
-
-
 // GET form to update item
 exports.itemUpdateGet = function (req, res, next) {
   res.send("NOT IMPLEMENTED: itemUpdateGet");
@@ -51,8 +93,6 @@ exports.itemUpdateGet = function (req, res, next) {
 exports.itemUpdatePost = function (req, res, next) {
   res.send("NOT IMPLEMENTED: itemUpdatePost");
 };
-
-
 
 // GET form to delete item
 exports.itemDeleteGet = function (req, res, next) {
