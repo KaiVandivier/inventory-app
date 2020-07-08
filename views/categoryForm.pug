@@ -1,0 +1,27 @@
+extends layout
+
+block content
+  h1= title
+
+  form(method="POST", action="")
+    .form-group
+      label(for="name") Name:
+      input#name.form-control(
+        type="text"
+        name="name"
+        placeholder="Category name"
+        value=(category ? category.name : "")
+        required="true"
+      )
+    
+    .form-group
+      label(for="description") Description:
+      textarea#description.form-control(
+        type="textarea"
+        name="description"
+        rows="3"
+        placeholder="Description"
+        required="true"
+      ) #{category ? category.description : ""}
+
+    button.btn.btn-primary(type="submit") Submit

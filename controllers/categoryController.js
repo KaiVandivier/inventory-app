@@ -8,14 +8,47 @@ const Recipe = require("../models/recipe");
 
 // Get form for category creation
 exports.categoryCreateGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: categoryCreateGet");
+  res.render("categoryForm", { title: "Create Category" });
 };
 // POST endpoint to create new category
-exports.categoryCreatePost = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: categoryCreatePost");
-};
+exports.categoryCreatePost = [
+  // Validate and sanitize fields
+  body("name", "Name is required").trim().isLength({ min: 1 }).escape(),
+  body("description", "Description is required")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
 
+  // Process request
+  function (req, res, next) {
+    const errors = validationResult(req);
 
+    const category = new Category({ ...req.body });
+
+    if (!errors.isEmpty()) {
+      // There are errors: rerender form with sanitized data and msgs
+      res.render("categoryForm", {
+        title: "Create Category",
+        category,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    // Otherwise, all good:
+    // Check to see if category exists:
+    Category.findOne({ name: req.body.name }, (err, foundCategory) => {
+      if (err) return next(err);
+      if (foundCategory) return res.redirect(foundCategory.url);
+      
+      // Otherwise, save new category
+      category.save((err) => {
+        if (err) return next(err);
+        res.redirect(category.url);
+      })
+    });
+  },
+];
 
 // GET a list of all categories
 exports.categoryListGet = function (req, res, next) {
@@ -24,8 +57,8 @@ exports.categoryListGet = function (req, res, next) {
     res.render("categoryList", {
       title: "Categories",
       categories,
-    })
-  })
+    });
+  });
 };
 
 // GET details of one category
@@ -49,8 +82,6 @@ exports.categoryDetailGet = function (req, res, next) {
   );
 };
 
-
-
 // GET form to update category
 exports.categoryUpdateGet = function (req, res, next) {
   res.send("NOT IMPLEMENTED: categoryUpdateGet");
@@ -59,8 +90,6 @@ exports.categoryUpdateGet = function (req, res, next) {
 exports.categoryUpdatePost = function (req, res, next) {
   res.send("NOT IMPLEMENTED: categoryUpdatePost");
 };
-
-
 
 // GET form to delete category
 exports.categoryDeleteGet = function (req, res, next) {
