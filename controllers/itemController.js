@@ -4,8 +4,6 @@ const debug = require("debug")("inventory-app:itemController");
 
 const Item = require("../models/item");
 const Category = require("../models/category");
-const RecipeItem = require("../models/recipeItem");
-const Recipe = require("../models/recipe");
 
 // Get form for item creation
 exports.itemCreateGet = async function (req, res, next) {
@@ -119,8 +117,6 @@ exports.itemUpdateGet = function (req, res, next) {
           category.checked = "true";
       });
 
-      debug(categories);
-
       res.render("itemForm", {
         title: "Update Item",
         item,
@@ -182,22 +178,14 @@ exports.itemUpdatePost = [
 
 // GET form to delete item
 exports.itemDeleteGet = function (req, res, next) {
-  // Get item and dependent objects (recipeItems)
-  async.parallel(
-    {
-      item: (cb) =>
+  // Get item
         Item.findById(req.params.id)
           .orFail(new Error("Item not found"))
-          .exec(cb),
-      recipeItems: (cb) =>
-        RecipeItem.find({ item: req.params.id }).populate("item").exec(cb),
-    },
-    (err, { item, recipeItems }) => {
+          .exec((err, item) => {
       if (err) return next(err);
       res.render("itemDelete", {
         title: "Delete Item",
         item,
-        recipeItems,
       });
     }
   );
