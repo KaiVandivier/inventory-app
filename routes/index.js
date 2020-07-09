@@ -4,9 +4,17 @@ const router = express.Router();
 const itemController = require("../controllers/itemController");
 const categoryController = require("../controllers/categoryController");
 
+const Category = require("../models/category");
+
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Inventory App' });
+router.get('/', function (req, res, next) {
+  Category.find((err, categories) => {
+    if (err) return next(err);
+    res.render("index", {
+      title: "Inventory App",
+      categories,
+    });
+  });
 });
 
 /**
