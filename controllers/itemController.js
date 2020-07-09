@@ -96,9 +96,40 @@ exports.itemUpdatePost = function (req, res, next) {
 
 // GET form to delete item
 exports.itemDeleteGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemDeleteGet");
+  // Get item and dependent objects (recipeItems)
+  async.parallel(
+    {
+      item: (cb) =>
+        Item.findById(req.params.id)
+          .orFail(new Error("Item not found"))
+          .exec(cb),
+      recipeItems: (cb) =>
+        RecipeItem.find({ item: req.params.id }).populate("item").exec(cb),
+    },
+    (err, { item, recipeItems }) => {
+      if (err) return next(err);
+      res.render("itemDelete", {
+        title: "Delete Item",
+        item,
+        recipeItems,
+      });
+    }
+  );
 };
 // POST endpoint to delete item
-exports.itemDeletePost = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemDeletePost");
-};
+exports.itemDeletePost = [
+  // Validate id
+  body("itemId").isMongoId(),
+
+  function (req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const err = new Error("Oops! Something went wrong with the item ID.");
+      return next(err);
+    }
+    Item.deleteOne({ _id: req.body.itemId }, (err) => {
+      if (err) return next(err);
+      res.redirect("/items");
+    })
+  },
+];

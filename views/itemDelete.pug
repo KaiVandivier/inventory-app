@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  h1 #{title}: #{item.name}
+
+  if recipeItems.length
+    p The following dependent objects must be deleted before you can delete this one:
+
+    dl
+      each recipeItem in recipeItems
+        dt #[a(href=recipeItem.url) #{recipeItem.item.name} &times; #{recipeItem.quantity}]
+        dd #[strong Price (each):] #{recipeItem.item.priceFormatted}
+  else
+    p Are you sure you want to delete this item?
+
+    form(method="POST" action="")
+      input#itemId(
+        type="hidden"
+        name="itemId"
+        value=item._id
+        required="true"
+      )
+      button.btn.btn-primary(type="submit") Delete
