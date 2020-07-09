@@ -84,12 +84,50 @@ exports.categoryDetailGet = function (req, res, next) {
 
 // GET form to update category
 exports.categoryUpdateGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: categoryUpdateGet");
+  // Get category to populate form
+  Category.findById(req.params.id)
+    .orFail("Oops! Category not found.")
+    .exec((err, category) => {
+      if (err) return next(err);
+
+      res.render("categoryForm", {
+        title: "Update Category",
+        category,
+      });
+    });
 };
 // POST endpoint to update category
-exports.categoryUpdatePost = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: categoryUpdatePost");
-};
+exports.categoryUpdatePost = [
+  // Validate and sanitize fields
+  body("name", "Name is required").trim().isLength({ min: 1 }).escape(),
+  body("description", "Description is required")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+
+  // Process request
+  function (req, res, next) {
+    const errors = validationResult(req);
+
+    const category = new Category({ ...req.body, _id: req.params.id });
+
+    if (!errors.isEmpty()) {
+      // There are errors: rerender form with sanitized data and msgs
+      res.render("categoryForm", {
+        title: "Update Category",
+        category,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    // Otherwise, all good:
+    Category.findByIdAndUpdate(req.params.id, category, (err, newCategory) => {
+      if (err) return next(err);
+      res.redirect(newCategory.url);
+    });
+  },
+];
 
 // GET form to delete category
 exports.categoryDeleteGet = function (req, res, next) {
@@ -110,10 +148,10 @@ exports.categoryDeletePost = [
   function (req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return next(new Error("Oops! That ID was invalid."));
-    
+
     Category.deleteOne({ _id: req.body.categoryId }, (err) => {
       if (err) return next(err);
       res.redirect("/categories");
-    })
+    });
   },
 ];
