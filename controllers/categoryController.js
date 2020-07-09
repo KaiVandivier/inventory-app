@@ -40,12 +40,12 @@ exports.categoryCreatePost = [
     Category.findOne({ name: req.body.name }, (err, foundCategory) => {
       if (err) return next(err);
       if (foundCategory) return res.redirect(foundCategory.url);
-      
+
       // Otherwise, save new category
       category.save((err) => {
         if (err) return next(err);
         res.redirect(category.url);
-      })
+      });
     });
   },
 ];
@@ -93,9 +93,27 @@ exports.categoryUpdatePost = function (req, res, next) {
 
 // GET form to delete category
 exports.categoryDeleteGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: categoryDeleteGet");
+  Category.findById(req.params.id)
+    .orFail(new Error("Category not found"))
+    .exec((err, category) => {
+      if (err) return next(err);
+      res.render("categoryDelete", {
+        title: "Delete Category",
+        category,
+      });
+    });
 };
 // POST endpoint to delete category
-exports.categoryDeletePost = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: categoryDeletePost");
-};
+exports.categoryDeletePost = [
+  body("categoryId", "Must use a valid database ID").isMongoId(),
+
+  function (req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return next(new Error("Oops! That ID was invalid."));
+    
+    Category.deleteOne({ _id: req.body.categoryId }, (err) => {
+      if (err) return next(err);
+      res.redirect("/categories");
+    })
+  },
+];
