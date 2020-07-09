@@ -31,8 +31,6 @@ exports.itemCreatePost = [
   body("category").toArray(),
 
   function (req, res, next) {
-    debug(req.body);
-
     const errors = validationResult(req);
 
     const item = new Item({ ...req.body });
@@ -41,6 +39,17 @@ exports.itemCreatePost = [
       // There are errors - rerender form with errors
       Category.find((err, categories) => {
         if (err) return next(err);
+
+        // Add `checked` prop to each category checked by user
+        categories.forEach((category) => {
+          if (
+            item.category.some(
+              (itemCategory) =>
+                itemCategory.toString() == category._id.toString()
+            )
+          )
+            category.checked = "true";
+        });
 
         res.render("itemForm", {
           title: "Create Item",
@@ -87,12 +96,89 @@ exports.itemDetailGet = function (req, res, next) {
 
 // GET form to update item
 exports.itemUpdateGet = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemUpdateGet");
+  // Get item and categories to fill in form
+  async.parallel(
+    {
+      item: (cb) =>
+        Item.findById(req.params.id)
+          .orFail(new Error("Oops! Item not found."))
+          .populate("category")
+          .exec(cb),
+      categories: (cb) => Category.find(cb),
+    },
+    (err, { item, categories }) => {
+      if (err) return next(err);
+
+      // Add `checked` to each of the item's categories
+      categories.forEach((category) => {
+        if (
+          item.category.some(
+            (itemCategory) => itemCategory._id.toString() == category._id.toString()
+          )
+        )
+          category.checked = "true";
+      });
+
+      debug(categories);
+
+      res.render("itemForm", {
+        title: "Update Item",
+        item,
+        categories,
+      });
+    }
+  );
 };
 // POST endpoint to update item
-exports.itemUpdatePost = function (req, res, next) {
-  res.send("NOT IMPLEMENTED: itemUpdatePost");
-};
+exports.itemUpdatePost = [
+  body("name", "Name must not be empty").trim().notEmpty().escape(),
+  body("description", "Description must not be empty")
+    .trim()
+    .notEmpty()
+    .escape(),
+  body("price", "Price must be a whole number (cents)").isInt({ min: 0 }),
+  body("stock", "Stock must be a whole number").isInt({ min: 0 }),
+  // Convert category to an array
+  body("category").toArray(),
+
+  function (req, res, next) {
+    const errors = validationResult(req);
+
+    const item = new Item({ ...req.body, _id: req.params.id });
+
+    if (!errors.isEmpty()) {
+      // There are errors - rerender form with errors
+      Category.find((err, categories) => {
+        if (err) return next(err);
+
+        // Add `checked` prop to each category checked by user
+        categories.forEach((category) => {
+          if (
+            item.category.some(
+              (itemCategory) =>
+                itemCategory.toString() == category._id.toString()
+            )
+          )
+            category.checked = "true";
+        });
+
+        res.render("itemForm", {
+          title: "Update Item",
+          item,
+          categories,
+          errors: errors.array(),
+        });
+      });
+      return;
+    }
+
+    // All good - save item and redirect to detail page
+    Item.findByIdAndUpdate(req.params.id, item, (err, newItem) => {
+      if (err) return next(err);
+      res.redirect(newItem.url);
+    })
+  },
+];
 
 // GET form to delete item
 exports.itemDeleteGet = function (req, res, next) {
@@ -130,6 +216,6 @@ exports.itemDeletePost = [
     Item.deleteOne({ _id: req.body.itemId }, (err) => {
       if (err) return next(err);
       res.redirect("/items");
-    })
+    });
   },
 ];
