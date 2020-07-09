@@ -1,5 +1,7 @@
 # Inventory App
 
+[View it live here](https://inventory-app-2020.herokuapp.com/)
+
 This is a simple website to show off some basic features of an express app, including:
 
 - A model/view/controller architecture
