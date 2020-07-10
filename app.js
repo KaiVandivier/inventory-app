@@ -6,6 +6,7 @@ const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const compression = require("compression");
 const helmet = require("helmet");
+require("dotenv").config();
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -14,8 +15,7 @@ const app = express();
 
 // MongoDB and Mongoose setup
 const mongoose = require("mongoose");
-const { devDbUrl } = require("./config");
-const mongoDB = process.env.MONGODB_URI || devDbUrl;
+const mongoDB = process.env.MONGODB_URI;
 mongoose.connect(mongoDB, {
   useNewUrlParser: true,
   useFindAndModify: false,
